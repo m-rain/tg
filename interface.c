@@ -1399,6 +1399,12 @@ void do_leave_channel (struct command *command, int arg_num, struct arg args[], 
   tgl_do_leave_channel (TLS, args[0].peer_id, print_success_gw, ev);
 }
 
+void do_delete_channel (struct command *command, int arg_num, struct arg args[], struct in_ev *ev) {
+  assert (arg_num == 1);
+  if (ev) { ev->refcnt ++; }
+  tgl_do_delete_channel (TLS, args[0].peer_id, print_success_gw, ev);
+}
+
 void do_export_channel_link (struct command *command, int arg_num, struct arg args[], struct in_ev *ev) {
   assert (arg_num == 1);
   if (ev) { ev->refcnt ++; }
@@ -1661,6 +1667,7 @@ struct command commands[MAX_COMMANDS_SIZE] = {
   {"channel_info", {ca_channel, ca_none}, do_channel_info, "channel_info <channel>\tPrints info about channel (id, members, admin, etc.)", NULL},
   {"channel_invite", {ca_channel, ca_user, ca_none}, do_channel_invite, "channel_invite <channel> <user>\tInvites user to channel", NULL},
   {"channel_join", {ca_channel, ca_none}, do_join_channel, "channel_join <channel>\tJoins to channel", NULL},
+  {"channel_delete", {ca_channel, ca_none}, do_delete_channel, "channel_delete <channel>\tdeletes the channel When you are owner", NULL},
   {"channel_kick", {ca_channel, ca_user, ca_none}, do_channel_kick, "channel_kick <channel> <user>\tKicks user from channel", NULL},
   {"channel_leave", {ca_channel, ca_none}, do_leave_channel, "channel_leave <channel>\tLeaves from channel", NULL},
   {"channel_list", {ca_number | ca_optional, ca_number | ca_optional, ca_none}, do_channel_list, "channel_list [limit=100] [offset=0]\tList of last channels", NULL},
@@ -2690,6 +2697,7 @@ void print_channel_info_gw (struct tgl_state *TLSR, void *extra, int success, st
   } else {
     #ifdef USE_JSON
       json_t *res = json_pack_peer (C->id);
+      assert (json_object_set (res, "about", json_string (C->about)) >= 0);
       char *s = json_dumps (res, 0);
       mprintf (ev, "%s\n", s);
       json_decref (res);
