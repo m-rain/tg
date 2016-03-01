@@ -440,6 +440,10 @@ json_t *json_pack_message (struct tgl_message *M) {
   if (M->flags & TGLMF_MENTION) {
     assert (json_object_set (res, "mention", json_true ()) >= 0);
   }
+
+  if (M->views) {
+    assert (json_object_set (res, "views", json_integer (M->views)) >= 0);
+  }
  
   assert (json_object_set (res, "from", json_pack_peer (M->from_id)) >= 0);
   assert (json_object_set (res, "to", json_pack_peer (M->to_id)) >= 0);
